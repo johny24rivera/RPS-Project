@@ -3,7 +3,9 @@
 
 MyServer::MyServer()
 {
-    server = new QTcpServer(this);
+    server = new QTcpServer(this); // initiate server
+
+    // When signal newConnection is occurs onNewConnection function runs
     connect(server, &QTcpServer::newConnection, this, &MyServer::onNewConnection);
 
     if(!server->listen(QHostAddress::Any, 1234))
@@ -16,19 +18,26 @@ MyServer::MyServer()
     }
 }
 
+/*
+ * Client connnection handler
+ */
 void MyServer::onNewConnection()
 {
     qDebug() << "Entered new connection";
-    QTcpSocket *socket = server->nextPendingConnection();
-    socket->waitForReadyRead(1000);
+    QTcpSocket *socket = server->nextPendingConnection(); //attaches socket to pending connection
+    socket->waitForReadyRead(1000); // Waits until message arrives or 1000ms timeout whichever comes first
     qDebug() << socket->readAll();
     socket->write("hello client\r\n");
     socket->flush();
 
+    // Call Rock Paper Scissors game
     runRPS(socket);
     socket->close();
 }
 
+/*
+ * Rock Paper Scissors game logic
+ */
 void MyServer::runRPS(QTcpSocket* socket)
 {
     bool run = true;
@@ -43,7 +52,6 @@ void MyServer::runRPS(QTcpSocket* socket)
         if (result[0] == 'Q')
         {
             run = false;
-            socket->close();
             return;
         }
 
@@ -51,6 +59,9 @@ void MyServer::runRPS(QTcpSocket* socket)
     }
 }
 
+/*
+ *  Random number generator to create AI response
+ */
 char MyServer::getCPUAnswer()
 {
     srand((unsigned int)time(NULL));
@@ -64,23 +75,34 @@ char MyServer::getCPUAnswer()
         return 'S';
 }
 
+/*
+ *  Determine Round winner
+ */
 char MyServer::getResult(char player1, char player2)
 {
     qDebug() << player1 << player2;
+
+    // Quit condition
     if (player1 == 'Q')
     {
         return 'Q';
     }
+
+    // Draw Condition
     else if (player1 == player2)
     {
         return 'D';
     }
+
+    // Player 1 Win Conditions
     else if((player1 == 'R' && player2 == 'S') ||
             (player1 == 'S' && player2 == 'P') ||
             (player1 == 'P' && player2 == 'R'))
     {
         return 'W';
     }
+
+    // Rest deteremines Computer Win conditions
     else
     {
         return 'L';

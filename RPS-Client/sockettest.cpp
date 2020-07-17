@@ -10,16 +10,15 @@ socketTest::socketTest()
 void socketTest::connect()
 {
     socket = new QTcpSocket(this);
-    //socket->bind("192.168.1.9"), 1234);
     socket->connectToHost("localhost", 1234);
 
     if (socket->waitForConnected(3000))
     {
         qDebug() << "Connected!";
         socket->write("hello server\r\n\r\n");
-        socket->flush();
-        socket->waitForReadyRead(1000);
-        qDebug() <<  "Reading response: " << socket->bytesAvailable();
+        socket->flush();                                                //Send all bytes to server
+        socket->waitForReadyRead(1000);                                 //Wait before reading
+        qDebug() <<  "Reading response: " << socket->bytesAvailable();  // amount of bytes
         qDebug() <<  socket->readAll();
 
         runRPS(socket);
@@ -34,6 +33,10 @@ void socketTest::connect()
     // close connection
 }
 
+/*
+ * Rock Paper Scissors game algorithm
+ */
+
 void socketTest::runRPS(QTcpSocket* _socket)
 {
     bool run = true;
@@ -45,6 +48,7 @@ void socketTest::runRPS(QTcpSocket* _socket)
         qDebug() <<  "Enter choice: ";
         std::cin >> response[0];
 
+        // Input Validation
         while (response[0] != 'R' && response[0] != 'P' &&
                      response[0] != 'S' && response[0] != 'Q')
         {
